@@ -18,6 +18,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.misis.archapp.contract.dto.UserCreatedEvent;
+import com.misis.archapp.user.publisher.EventPublisher;
+
+
 @Service
 public class UserService {
     private static final Logger LOGGER = LoggerFactory.getLogger(UserService.class);
@@ -25,21 +29,28 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final UserCacheService userCacheService;
+    private final EventPublisher eventPublisher;
 
+   
     @Autowired
     public UserService(
         UserRepository userRepository,
         UserMapper userMapper,
-        UserCacheService userCacheService
+        UserCacheService userCacheService,
+        EventPublisher eventPublisher
     ) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.userCacheService = userCacheService;
+        this.eventPublisher = eventPublisher;
     }
 
-    public List<UserDTO> getAllUsers() {
-        return userMapper.toDTOList(userRepository.findAll());
-    }
+
+        public List<UserDTO> getAllUsers() {
+            return userMapper.toDTOList(userRepository.findAll());
+        }
+
+
 
     public UserDTO getUserById(UUID id) {
         Optional<UserDTO> cachedUser = userCacheService.getFromCache(id);
@@ -57,11 +68,22 @@ public class UserService {
         return userFromDB;
     }
 
+
     public UserDTO createUser(UserCreateDTO userCreateDTO) {
         User user = userMapper.toEntity(userCreateDTO);
         User savedUser = userRepository.save(user);
+
+        UserCreatedEvent event = new UserCreatedEvent(
+            savedUser.getId(),
+            savedUser.getEmail(),
+            savedUser.getName()
+        );
+
+        eventPublisher.publishUserCreated(event);
+
         return userMapper.toDTO(savedUser);
     }
+
 
     public UserDTO updateUser(UUID id, UserUpdateDTO userUpdateDTO) {
         User user = userRepository.findById(id)
