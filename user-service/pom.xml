@@ -83,6 +83,13 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
+
+	<!-- Redis / KeyDB для кэширования -->
+	<dependency>
+	    <groupId>org.springframework.boot</groupId>
+    	    <artifactId>spring-boot-starter-data-redis</artifactId>
+	</dependency>
+
     </dependencies>
 
     <build>
