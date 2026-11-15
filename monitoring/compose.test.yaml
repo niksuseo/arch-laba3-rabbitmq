@@ -1,0 +1,9 @@
+services:
+  prometheus:
+    ports: !reset []
+  grafana:
+    ports: !reset []
+  alertmanager:
+    ports: !reset []
+  mailpit:
+    ports: !reset []

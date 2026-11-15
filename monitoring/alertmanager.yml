@@ -1,0 +1,17 @@
+global:
+  smtp_smarthost: 'mailpit:1025'
+  smtp_from: 'alerts@lab4.local'
+  smtp_require_tls: false
+
+route:
+  receiver: 'mailpit'
+  group_by: ['alertname']
+  group_wait: 5s
+  group_interval: 10s
+  repeat_interval: 1h
+
+receivers:
+  - name: 'mailpit'
+    email_configs:
+      - to: 'student@lab4.local'
+        send_resolved: true

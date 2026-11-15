@@ -1,0 +1,26 @@
+groups:
+  - name: lab4-alerts
+    rules:
+      - alert: UserServiceDown
+        expr: up{job="user-service"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "User service is unavailable"
+
+      - alert: RabbitMQDown
+        expr: up{job="rabbitmq"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "RabbitMQ is unavailable"
+
+      - alert: RabbitMQQueueBacklog
+        expr: rabbitmq_queue_messages{job="rabbitmq"} > 10
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "RabbitMQ queue backlog is growing"

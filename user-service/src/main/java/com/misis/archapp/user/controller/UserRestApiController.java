@@ -4,6 +4,9 @@ import com.misis.archapp.user.dto.UserCreateDTO;
 import com.misis.archapp.user.dto.UserDTO;
 import com.misis.archapp.user.dto.UserUpdateDTO;
 import com.misis.archapp.user.service.UserService;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
@@ -24,17 +27,33 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserRestApiController {
 
     private final UserService userService;
+    private final Counter userRequestsCounter;
+    private final MeterRegistry meterRegistry;
 
     @Autowired
     public UserRestApiController(
-        UserService userService
+        UserService userService,
+        MeterRegistry meterRegistry
     ) {
         this.userService = userService;
+	this.meterRegistry = meterRegistry;
+
+        this.userRequestsCounter = Counter.builder("user_requests_total")
+            .description("Total number of requests to the user API")
+            .register(meterRegistry);
     }
 
     @GetMapping
     public List<UserDTO> getAllUsers() {
-        return userService.getAllUsers();
+	userRequestsCounter.increment();
+	meterRegistry.counter(
+            "user_api_operations",
+            "operation", "get_all"
+        ).increment();
+         return Timer.builder("user_get_all_duration")
+            .description("Duration of getting all users")
+            .register(meterRegistry)
+            .record(() -> userService.getAllUsers());
     }
 
     @GetMapping("{id}")
@@ -44,6 +63,10 @@ public class UserRestApiController {
 
     @PostMapping
     public UserDTO createUser(@RequestBody @Valid UserCreateDTO userCreateDTO) {
+	meterRegistry.counter(
+            "user_api_operations",
+            "operation", "create"
+        ).increment();
         return userService.createUser(userCreateDTO);
     }
 
@@ -55,6 +78,11 @@ public class UserRestApiController {
     @DeleteMapping("{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteUser(@PathVariable("id") UUID id) {
+
+	meterRegistry.counter(
+            "user_api_operations",
+            "operation", "delete"
+        ).increment();
         userService.deleteUser(id);
     }
 
