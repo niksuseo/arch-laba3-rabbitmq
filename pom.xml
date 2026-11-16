@@ -28,6 +28,11 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.axonframework</groupId>
+                <artifactId>axon-spring-boot-starter</artifactId>
+                <version>4.9.1</version>
+            </dependency>
             <!-- общие модули -->
             <dependency>
                 <groupId>com.misis</groupId>

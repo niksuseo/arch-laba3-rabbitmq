@@ -1,0 +1,36 @@
+services:
+  axonserver:
+    image: axoniq/axonserver:latest
+    ports:
+      - "8024:8024"
+      - "8124:8124"
+    environment:
+      AXONIQ_AXONSERVER_NAME: axonserver
+      AXONIQ_AXONSERVER_HOSTNAME: axonserver
+      AXONIQ_AXONSERVER_DEVMODE_ENABLED: "true"
+    volumes:
+      - axon-data:/data
+      - axon-events:/eventdata
+    restart: unless-stopped
+
+  balance-db:
+    image: postgres:13.3
+    environment:
+      POSTGRES_DB: balance-db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "127.0.0.1:5435:5432"
+    volumes:
+      - balance-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d balance-db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  axon-data:
+  axon-events:
+  balance-db-data:
